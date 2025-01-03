@@ -24,8 +24,13 @@ def num_eights(n):
     ...       ['Assign', 'AnnAssign', 'AugAssign', 'NamedExpr', 'For', 'While'])
     True
     """
-    "*** YOUR CODE HERE ***"
-
+    if n > 0:
+        if n % 10 == 8:
+            return num_eights(n//10) + 1
+        else:
+            return num_eights(n//10)
+    else:
+        return 0
 
 def digit_distance(n):
     """Determines the digit distance of n.
@@ -46,7 +51,12 @@ def digit_distance(n):
     ...       ['For', 'While'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    if n // 10 == 0:
+        return 0
+    else:
+        all_but_last, last = n // 10, n % 10
+        second_to_last = all_but_last % 10
+        return digit_distance(all_but_last) + abs(last - second_to_last)
 
 
 def interleaved_sum(n, odd_func, even_func):
@@ -70,7 +80,21 @@ def interleaved_sum(n, odd_func, even_func):
     >>> check(HW_SOURCE_FILE, 'interleaved_sum', ['BitAnd', 'BitOr', 'BitXor']) # ban bitwise operators, don't worry about these if you don't know what they are
     True
     """
-    "*** YOUR CODE HERE ***"
+
+    def odd_interleaved_sum(k):  # k is odd
+        if k == n:
+            return odd_func(k)
+        else:
+            return odd_func(k) + even_interleaved_sum(k + 1)
+
+    def even_interleaved_sum(i):  # i is even
+        if i == n:
+            return even_func(i)
+        else:
+            return even_func(i) + odd_interleaved_sum(i + 1)
+
+    return odd_interleaved_sum(1)
+
 
 
 def next_smaller_dollar(bill):
@@ -106,7 +130,17 @@ def count_dollars(total):
     >>> check(HW_SOURCE_FILE, 'count_dollars', ['While', 'For'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    def count_with(dollar, bill):
+        if dollar == 0:
+            return 1
+        elif dollar < 0:
+            return 0
+        elif bill == None:
+            return 0
+        else:
+            return count_with(dollar - bill, bill) + count_with(dollar, next_smaller_dollar(bill))
+
+    return count_with(total, 100)
 
 
 def next_larger_dollar(bill):
@@ -142,7 +176,17 @@ def count_dollars_upward(total):
     >>> check(HW_SOURCE_FILE, 'count_dollars_upward', ['While', 'For'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    def count_with(dollar, bill):
+        if dollar == 0:
+            return 1
+        elif dollar < 0:
+            return 0
+        elif bill == None:
+            return 0
+        else:
+            return count_with(dollar - bill, bill) + count_with(dollar, next_larger_dollar(bill))
+
+    return count_with(total, 1)
 
 
 def print_move(origin, destination):
