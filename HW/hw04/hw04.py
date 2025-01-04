@@ -12,7 +12,12 @@ def shuffle(s):
     ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
     """
     assert len(s) % 2 == 0, 'len(seq) must be even'
-    "*** YOUR CODE HERE ***"
+    half_len = len(s) // 2
+    first_half, second_half = s[:half_len], s[half_len:]
+    result_list = []
+    for i in range(half_len):
+        result_list += [first_half[i], second_half[i]]
+    return result_list
 
 
 def deep_map(f, s):
@@ -37,7 +42,11 @@ def deep_map(f, s):
     >>> s3 is s2[1]
     True
     """
-    "*** YOUR CODE HERE ***"
+    for i in range(len(s)):
+        if type(s[i]) != list:
+            s[i] = f(s[i])
+        else:
+            deep_map(f, s[i])
 
 
 HW_SOURCE_FILE=__file__
@@ -46,12 +55,12 @@ HW_SOURCE_FILE=__file__
 def planet(mass):
     """Construct a planet of some mass."""
     assert mass > 0
-    "*** YOUR CODE HERE ***"
+    return ['planet', mass]
 
 def mass(p):
     """Select the mass of a planet."""
     assert is_planet(p), 'must call mass on a planet'
-    "*** YOUR CODE HERE ***"
+    return p[1]
 
 def is_planet(p):
     """Whether p is a planet."""
@@ -103,7 +112,17 @@ def balanced(m):
     >>> check(HW_SOURCE_FILE, 'balanced', ['Index'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    if is_planet(m):
+        return True
+    else:
+        assert is_mobile(m), "must be planet or mobile"
+        l_arm, r_arm = left(m), right(m)
+        l_end, r_end = end(l_arm), end(r_arm)
+        l_torque, r_torque = length(l_arm) * total_mass(l_end), length(r_arm) * total_mass(r_end)
+        if l_torque == r_torque and balanced(l_end) and balanced(r_end):
+            return True
+        else:
+            return False
 
 
 def berry_finder(t):
@@ -123,7 +142,13 @@ def berry_finder(t):
     >>> berry_finder(t)
     True
     """
-    "*** YOUR CODE HERE ***"
+    if label(t) == 'berry':
+        return True
+    else:
+        for branch in branches(t):
+            if berry_finder(branch):
+                return True
+    return False
 
 
 HW_SOURCE_FILE=__file__
@@ -138,7 +163,16 @@ def max_path_sum(t):
     >>> max_path_sum(t2) # 5, 2, 10
     17
     """
-    "*** YOUR CODE HERE ***"
+    if is_leaf(t):
+        return label(t)
+    else:
+        max_sum = 0
+        for branch in branches(t):
+            branch_max_sum = label(t) + max_path_sum(branch)
+            if branch_max_sum > max_sum:
+                max_sum = branch_max_sum
+
+        return max_sum
 
 
 def mobile(left, right):
