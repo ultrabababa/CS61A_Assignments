@@ -37,7 +37,11 @@ def pick(paragraphs, select, k):
     ''
     """
     # BEGIN PROBLEM 1
-    "*** YOUR CODE HERE ***"
+    true_list = [ps for ps in paragraphs if select(ps)]
+    if k >= len(true_list):
+        return ''
+    else:
+        return true_list[k]
     # END PROBLEM 1
 
 
@@ -57,7 +61,14 @@ def about(subject):
     assert all([lower(x) == x for x in subject]), "subjects should be lowercase."
 
     # BEGIN PROBLEM 2
-    "*** YOUR CODE HERE ***"
+    def about_subject(ps):
+        ps_list = split(lower(remove_punctuation(ps)))
+        for s in ps_list:
+            if s in subject:
+                return True
+        return False
+
+    return about_subject
     # END PROBLEM 2
 
 
@@ -87,7 +98,18 @@ def accuracy(typed, source):
     typed_words = split(typed)
     source_words = split(source)
     # BEGIN PROBLEM 3
-    "*** YOUR CODE HERE ***"
+    typed_len, source_len = len(typed_words), len(source_words)
+    if typed_len == 0 and source_len == 0:
+        return 100.0
+    elif typed_len == 0 and source_len != 0:
+        return 0.0
+    match_count = 0
+    min_len = min(len(typed_words), len(source_words))
+    for i in range(min_len):
+        if typed_words[i] == source_words[i]:
+            match_count += 1
+
+    return match_count / typed_len * 100
     # END PROBLEM 3
 
 
@@ -105,7 +127,7 @@ def wpm(typed, elapsed):
     """
     assert elapsed > 0, "Elapsed time must be positive"
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    return len(typed) / elapsed * 12
     # END PROBLEM 4
 
 
@@ -135,7 +157,18 @@ def memo_diff(diff_function):
 
     def memoized(typed, source, limit):
         # BEGIN PROBLEM EC
-        "*** YOUR CODE HERE ***"
+        immutable_tuple = (typed, source)
+        if immutable_tuple not in cache:
+            value = diff_function(typed, source, limit)
+            cache[immutable_tuple] = (value, limit)
+        else:
+            cached_limit = cache[immutable_tuple][1]
+            if limit <= cached_limit:
+                return cache[immutable_tuple][0]
+            else:
+                new_value = diff_function(typed, source, limit)
+                cache[immutable_tuple] = (new_value, limit)
+        return cache[immutable_tuple][0]
         # END PROBLEM EC
 
     return memoized
@@ -145,7 +178,7 @@ def memo_diff(diff_function):
 # Phase 2 #
 ###########
 
-
+@memo
 def autocorrect(typed_word, word_list, diff_function, limit):
     """Returns the element of WORD_LIST that has the smallest difference
     from TYPED_WORD based on DIFF_FUNCTION. If multiple words are tied for the smallest difference,
@@ -166,7 +199,13 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     'testing'
     """
     # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
+    if typed_word in word_list:
+        return typed_word
+    possible_word = min(word_list, key=lambda x:diff_function(typed_word, x, limit))
+    if diff_function(typed_word, possible_word, limit) > limit:
+        return typed_word
+    else:
+        return possible_word
     # END PROBLEM 5
 
 
@@ -193,10 +232,24 @@ def furry_fixes(typed, source, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    def furry_fixes_helper(t, s, diff):
+        if diff > limit:
+            return limit + 1
+        if len(t) == 0:
+            return diff + len(s)
+        elif len(s) == 0:
+            return diff + len(t)
+        else:
+            if t[0] == s[0]:
+                return furry_fixes_helper(t[1:], s[1:], diff)
+            else:
+                return furry_fixes_helper(t[1:], s[1:], diff + 1)
+
+    return furry_fixes_helper(typed, source, 0)
     # END PROBLEM 6
 
 
+@memo_diff
 def minimum_mewtations(typed, source, limit):
     """A diff function for autocorrect that computes the edit distance from TYPED to SOURCE.
     This function takes in a string TYPED, a string SOURCE, and a number LIMIT.
@@ -214,23 +267,26 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________: # Base cases should go here, you may add more base cases as needed.
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+    if limit < 0: # Base cases should go here, you may add more base cases as needed.
+        return 10**100
+    if limit == 0:
+        if typed == source:
+            return 0
+        else:
+            return 10**100
+    if len(typed) == 0:
+        return len(source)
+    if len(source) == 0:
+        return len(typed)
     # Recursive cases should go below here
-    if ___________: # Feel free to remove or add additional cases
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-    else:
-        add = ... # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
+    if typed[0] == source[0]: # Feel free to remove or add additional cases
+        return minimum_mewtations(typed[1:], source[1:], limit)
+
+    add = minimum_mewtations(typed, source[1:], limit - 1)
+    remove = minimum_mewtations(typed[1:], source, limit - 1)
+    substitute = minimum_mewtations(typed[1:], source[1:], limit - 1)
+
+    return min(add, remove, substitute) + 1
 
 
 # Ignore the line below
@@ -240,7 +296,20 @@ minimum_mewtations = count(minimum_mewtations)
 def final_diff(typed, source, limit):
     """A diff function that takes in a string TYPED, a string SOURCE, and a number LIMIT.
     If you implement this function, it will be used."""
-    assert False, "Remove this line to use your final_diff function."
+    def furry_fixes_helper(t, s, diff):
+        if diff > limit:
+            return limit + 1
+        if len(t) == 0:
+            return diff + len(s)
+        elif len(s) == 0:
+            return diff + len(t)
+        else:
+            if t[0] == s[0]:
+                return furry_fixes_helper(t[1:], s[1:], diff)
+            else:
+                return furry_fixes_helper(t[1:], s[1:], diff + 1)
+
+    return furry_fixes_helper(typed, source, 0)
 
 
 FINAL_DIFF_LIMIT = 6  # REPLACE THIS WITH YOUR LIMIT
@@ -275,7 +344,15 @@ def report_progress(typed, source, user_id, upload):
     0.2
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    match_count = 0
+    for i in range(len(typed)):
+        if typed[i] == source[i]:
+            match_count += 1
+        else:
+            break
+    correct_ratio = match_count / len(source)
+    upload({'id': user_id, 'progress': correct_ratio})
+    return correct_ratio
     # END PROBLEM 8
 
 
@@ -300,6 +377,11 @@ def time_per_word(words, timestamps_per_player):
     tpp = timestamps_per_player  # A shorter name (for convenience)
     # BEGIN PROBLEM 9
     times = []  # You may remove this line
+    for j in range(len(tpp)):
+        player_timestamps, player_time = tpp[j], []
+        for i in range(len(player_timestamps) - 1):
+            player_time = player_time + [player_timestamps[i + 1] - player_timestamps[i]]
+        times += [player_time]
     # END PROBLEM 9
     return {'words': words, 'times': times}
 
@@ -326,7 +408,27 @@ def fastest_words(words_and_times):
     player_indices = range(len(times))  # contains an *index* for each player
     word_indices = range(len(words))    # contains an *index* for each word
     # BEGIN PROBLEM 10
-    "*** YOUR CODE HERE ***"
+    result_list = []
+    for p in player_indices:
+        p_fastest_list = []
+        for w in word_indices:
+            print("DEBUG: w=", words[w])
+            p_w_time = get_time(times, p, w)
+            p_w_fastest = True
+            for pp in player_indices:
+                pp_w_time = get_time(times, pp, w)
+                if pp_w_time < p_w_time:
+                    p_w_fastest = False
+                    break
+                if pp_w_time == p_w_time and pp < p:
+                    p_w_fastest = False
+                    break
+            if p_w_fastest:
+                p_fastest_list += [words[w]]
+                print("DEBUG: w=", words[w], "p_fastest_list=", p_fastest_list)
+        result_list += [p_fastest_list]
+
+    return result_list
     # END PROBLEM 10
 
 
@@ -352,7 +454,7 @@ def get_time(times, player_num, word_index):
     return times[player_num][word_index]
 
 
-enable_multiplayer = False  # Change to True when you're ready to race.
+enable_multiplayer = True  # Change to True when you're ready to race.
 
 ##########################
 # Command Line Interface #
